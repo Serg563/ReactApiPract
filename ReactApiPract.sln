@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33205.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactApiPract", "ReactApiPract\ReactApiPract.csproj", "{D54331CB-6530-4DDC-82C2-56F351D15F7C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D54331CB-6530-4DDC-82C2-56F351D15F7C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D54331CB-6530-4DDC-82C2-56F351D15F7C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D54331CB-6530-4DDC-82C2-56F351D15F7C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D54331CB-6530-4DDC-82C2-56F351D15F7C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5B3B5281-360C-45BF-97FB-47DA2C4E3281}
+	EndGlobalSection
+EndGlobal
