@@ -1,12 +1,17 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Win32;
 using ReactApiPract.Data;
 using ReactApiPract.Models;
 using ReactApiPract.Models.DTO;
 using ReactApiPract.Services;
 using ReactApiPract.Utility;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Security.Claims;
+using System.Text;
 
 namespace ReactApiPract.Controllers
 {
@@ -82,10 +87,60 @@ namespace ReactApiPract.Controllers
 
         }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] RegisterRequestDTO register)
-        {
 
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequestDTO login)
+        {
+            ApplicationUser user = _context.ApplicationUsers
+                .FirstOrDefault(q => q.UserName.ToLower() == login.UserName.ToLower());
+
+            bool isValid = await _usermanager.CheckPasswordAsync(user, login.Password);
+            if (!isValid)
+            {
+                _response.Result = new LoginResponseDTO();
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("Register Error");
+                return BadRequest(_response);
+            }
+
+
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            byte[] key = Encoding.ASCII.GetBytes(secretKey);
+            var roles = await _usermanager.GetRolesAsync(user);
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                    new Claim("fullname", user.Name),
+                    new Claim("id", user.Id.ToString()),
+                    new Claim(ClaimTypes.Email, user.Email.ToString()),
+                    new Claim(ClaimTypes.Role, roles.FirstOrDefault()),
+                }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),SecurityAlgorithms.HmacSha256Signature)
+            };
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
+        
+
+
+            LoginResponseDTO loginResponse = new LoginResponseDTO()
+            {
+                Email = user.Email,
+                Token = tokenHandler.WriteToken(token)
+            };
+            if(loginResponse == null || string.IsNullOrEmpty(loginResponse.Token))
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                _response.ErrorMessages.Add("UserName or Password is incorrect");
+                return BadRequest(_response);
+            }
+            _response.StatusCode = HttpStatusCode.OK;
+            _response.IsSuccess = true;
+            _response.Result = loginResponse;
+            return Ok(_response);
         }
 
 
