@@ -21,6 +21,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IBlobService,BlobService>();
+builder.Services.AddScoped<ApiResponse>();
 builder.Services.AddSingleton(q => 
     new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
 

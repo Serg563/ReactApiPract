@@ -38,9 +38,22 @@ namespace ReactApiPract.Controllers
         [ProducesResponseType(404)]
         public async Task<IActionResult> GetMenuItem(int id)
         {
-            var res = _context.MenuItems.FirstOrDefault(x => x.Id == id);
-            if (res == null) { return NotFound(); }
-            return Ok(res);
+            if(id == 0)
+            {
+                _response.StatusCode = HttpStatusCode.BadRequest;
+                _response.IsSuccess = false;
+                return BadRequest(_response);
+            }
+            MenuItem menuitem = await _context.MenuItems.FirstOrDefaultAsync(x => x.Id == id);
+            if(menuitem == null)
+            {
+                _response.StatusCode = HttpStatusCode.NotFound;
+                _response.IsSuccess = false;
+                return NotFound(_response);
+            }
+            _response.Result = menuitem;
+            _response.StatusCode = HttpStatusCode.OK;
+            return Ok(_response);
         }
         [HttpPost]
         public async Task<ActionResult<ApiResponse>> CreateMenuItem([FromForm]MenuItemCreateDTO menuitem)
@@ -51,6 +64,8 @@ namespace ReactApiPract.Controllers
                 {
                     if(menuitem.File == null || menuitem.File.Length == 0)
                     {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.IsSuccess = false;
                         return BadRequest();
                     }
                     string filename = $"{Guid.NewGuid()}{Path.GetExtension(menuitem.File.FileName)}";
@@ -80,6 +95,94 @@ namespace ReactApiPract.Controllers
                 _response.ErrorMessages = new List<string> { ex.ToString() };
             }
             return _response;
-        } 
+        }
+        [HttpPut("{id:int}", Name = "GetMenuItem")]
+        public async Task<ActionResult<ApiResponse>> UpdateMenuItem(int id,[FromForm] MenuItemUpdateDTO menuitemupdate)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (menuitemupdate == null || id != menuitemupdate.Id)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.IsSuccess = false;
+                        return BadRequest();
+                    }
+                    MenuItem menuItem = await _context.MenuItems.FindAsync(id); 
+                    if(menuItem == null)
+                    {
+                        _response.StatusCode = HttpStatusCode.BadRequest;
+                        _response.IsSuccess = false;
+                        return BadRequest();
+                    }
+
+                    menuItem.Id = menuitemupdate.Id;
+                    menuItem.Name = menuitemupdate.Name;
+                    menuItem.Price = menuitemupdate.Price;
+                    menuItem.Category = menuitemupdate.Category;
+                    menuItem.SpecialTag = menuitemupdate.SpecialTag;
+                    if(menuitemupdate.File != null && menuitemupdate.File.Length > 0)
+                    {
+                        string filename = $"{Guid.NewGuid()}{Path.GetExtension(menuitemupdate.File.FileName)}";
+                        await _blobservice.DeleteBlob(menuItem.Image.Split('/').Last(), SD.SD_Storage_Container);
+                        menuItem.Image = await _blobservice.UploadBlob(filename, SD.SD_Storage_Container, menuitemupdate.File);
+                    }
+
+                   
+                    _context.MenuItems.Update(menuItem);
+                    _context.SaveChanges();
+                    _response.StatusCode = HttpStatusCode.NoContent;
+                    return Ok(_response);
+                }
+                else
+                {
+                    _response.IsSuccess = false;
+                }
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = true;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+            }
+            return _response;
+        }
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult<ApiResponse>> DeleteMenuItem(int id)
+        {
+            try
+            {
+               
+                if(id == 0)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    return BadRequest();
+                }
+                MenuItem menuItem = await _context.MenuItems.FindAsync(id);
+                if (menuItem == null)
+                {
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    _response.IsSuccess = false;
+                    return BadRequest();
+                }
+
+
+                await _blobservice.DeleteBlob(menuItem.Image.Split('/').Last(), SD.SD_Storage_Container);
+                Thread.Sleep(2000);
+
+                _context.MenuItems.Remove(menuItem);
+                _context.SaveChanges();
+                _response.StatusCode = HttpStatusCode.NoContent;
+                return Ok(_response);
+              
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = true;
+                _response.ErrorMessages = new List<string> { ex.ToString() };
+            }
+            return _response;
+        }
     }
 }
