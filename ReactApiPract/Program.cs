@@ -1,11 +1,28 @@
+using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
+using ReactApiPract.Data;
+using ReactApiPract.Models;
+using ReactApiPract.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDbContext<AppDbContext>(option => 
+{
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection"));
+});
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<IBlobService,BlobService>();
+builder.Services.AddSingleton(q => 
+    new BlobServiceClient(builder.Configuration.GetConnectionString("StorageAccount")));
 
 var app = builder.Build();
 
