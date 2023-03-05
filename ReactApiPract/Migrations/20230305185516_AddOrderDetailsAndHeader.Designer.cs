@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ReactApiPract.Data;
 
@@ -11,9 +12,11 @@ using ReactApiPract.Data;
 namespace ReactApiPract.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230305185516_AddOrderDetailsAndHeader")]
+    partial class AddOrderDetailsAndHeader
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -416,8 +419,6 @@ namespace ReactApiPract.Migrations
 
                     b.HasIndex("MenuItemId");
 
-                    b.HasIndex("OrderHeaderId");
-
                     b.ToTable("OrderDetails");
                 });
 
@@ -435,6 +436,9 @@ namespace ReactApiPract.Migrations
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("OrderHeaderId1")
+                        .HasColumnType("int");
 
                     b.Property<double>("OrderTotal")
                         .HasColumnType("float");
@@ -465,6 +469,8 @@ namespace ReactApiPract.Migrations
                     b.HasKey("OrderHeaderId");
 
                     b.HasIndex("ApplicationUserId");
+
+                    b.HasIndex("OrderHeaderId1");
 
                     b.ToTable("OrderHeaders");
                 });
@@ -562,12 +568,6 @@ namespace ReactApiPract.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ReactApiPract.Models.OrderHeader", null)
-                        .WithMany("Items")
-                        .HasForeignKey("OrderHeaderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("MenuItem");
                 });
 
@@ -578,6 +578,10 @@ namespace ReactApiPract.Migrations
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("ReactApiPract.Models.OrderHeader", null)
+                        .WithMany("Items")
+                        .HasForeignKey("OrderHeaderId1");
 
                     b.Navigation("User");
                 });

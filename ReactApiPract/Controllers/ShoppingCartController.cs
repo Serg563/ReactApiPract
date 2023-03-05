@@ -18,7 +18,37 @@ namespace ReactApiPract.Controllers
             _response = new();
             _context = context;
         }
-         
+        [HttpGet]
+        public async Task<ActionResult<ApiResponse>> GetShoppingCart(string userId)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(userId))
+                {
+                    _response.IsSuccess = false;
+                    _response.StatusCode = HttpStatusCode.BadRequest;
+                    return BadRequest(_response);
+                }
+                ShoppingCart shoppingCart = _context.ShoppingCarts.Include(q => q.CarItems)
+                    .ThenInclude(q => q.MenuItem)
+                    .FirstOrDefault(q=>q.UserId == userId);
+                if(shoppingCart.CarItems != null && shoppingCart.CarItems.Count > 0)
+                {
+                    shoppingCart.CartTotal = shoppingCart.CarItems.Sum(q => q.Quantity * q.MenuItem.Price);
+                }
+                _response.Result = shoppingCart;
+                _response.StatusCode = HttpStatusCode.OK;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.ErrorMessages
+                     = new List<string>() { ex.ToString() };
+                _response.StatusCode = HttpStatusCode.BadRequest;
+            }
+            return _response;
+        }
 
 
         [HttpPost]
