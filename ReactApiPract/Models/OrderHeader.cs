@@ -22,6 +22,6 @@ namespace ReactApiPract.Models
         public string Status { get; set; }
         public int TotalItems { get; set; }
 
-        public IEnumerable<OrderDetails> Items { get; set;}
+        public IEnumerable<OrderDetails> OrderDetails { get; set;}
     }
 }
