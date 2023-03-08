@@ -23,15 +23,18 @@ namespace ReactApiPract.Controllers
         {
             try
             {
+                ShoppingCart shoppingCart;
                 if (string.IsNullOrEmpty(userId))
                 {
-                    _response.IsSuccess = false;
-                    _response.StatusCode = HttpStatusCode.BadRequest;
-                    return BadRequest(_response);
+                    shoppingCart = new();
                 }
-                ShoppingCart shoppingCart = _context.ShoppingCarts.Include(q => q.CarItems)
-                    .ThenInclude(q => q.MenuItem)
-                    .FirstOrDefault(q=>q.UserId == userId);
+                else
+                {
+                    shoppingCart = _context.ShoppingCarts.Include(q => q.CarItems)
+                        .ThenInclude(q => q.MenuItem)
+                        .FirstOrDefault(q=>q.UserId == userId);
+
+                }
                 if(shoppingCart.CarItems != null && shoppingCart.CarItems.Count > 0)
                 {
                     shoppingCart.CartTotal = shoppingCart.CarItems.Sum(q => q.Quantity * q.MenuItem.Price);
