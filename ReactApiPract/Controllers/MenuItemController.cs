@@ -18,11 +18,13 @@ namespace ReactApiPract.Controllers
         private readonly AppDbContext _context;
         private ApiResponse _response;
         IBlobService _blobservice;
-        public MenuItemController(AppDbContext context,ApiResponse response,IBlobService blobService)
+        private readonly IWebHostEnvironment _webHostEnvironment;
+        public MenuItemController(AppDbContext context,ApiResponse response, IBlobService blobService, IWebHostEnvironment webHostEnvironment)
         {
             _context = context;
             _response = response;
             _blobservice = blobService;
+            _webHostEnvironment = webHostEnvironment;
         }
         [HttpGet]
         [ProducesResponseType(200)]
@@ -151,8 +153,7 @@ namespace ReactApiPract.Controllers
         public async Task<ActionResult<ApiResponse>> DeleteMenuItem(int id)
         {
             try
-            {
-               
+            {              
                 if(id == 0)
                 {
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -166,16 +167,13 @@ namespace ReactApiPract.Controllers
                     _response.IsSuccess = false;
                     return BadRequest();
                 }
-
-
                 await _blobservice.DeleteBlob(menuItem.Image.Split('/').Last(), SD.SD_Storage_Container);
                 Thread.Sleep(2000);
 
                 _context.MenuItems.Remove(menuItem);
                 _context.SaveChanges();
                 _response.StatusCode = HttpStatusCode.NoContent;
-                return Ok(_response);
-              
+                return Ok(_response);            
             }
             catch (Exception ex)
             {
@@ -184,5 +182,28 @@ namespace ReactApiPract.Controllers
             }
             return _response;
         }
+
+
+        // Create file to local folder
+
+        //[NonAction]
+        //public async Task<string> SaveImageMethod(IFormFile imageFile)
+        //{
+        //    string imageName = new string(Path.GetFileNameWithoutExtension(imageFile.FileName).Take(10).ToArray()).Replace(' ', '-');
+        //    imageName = imageName + Path.GetExtension(imageFile.FileName);
+        //    var imagePath = Path.Combine(_webHostEnvironment.ContentRootPath, "Images", imageName);
+        //    using (var fileStream = new FileStream(imagePath, FileMode.Create))
+        //    {
+        //        await imageFile.CopyToAsync(fileStream);
+        //    }
+        //    return imageName;
+        //}
+        //[HttpPost("SaveImage")]
+        //public async Task<IActionResult> SaveImage([FromBody]IFormFile imageFile)
+        //{
+        //    var result = SaveImage(imageFile);
+        //    return Ok(result);
+        //}
+       
     }
 }

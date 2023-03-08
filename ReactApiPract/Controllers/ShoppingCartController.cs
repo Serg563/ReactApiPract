@@ -57,7 +57,8 @@ namespace ReactApiPract.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ApiResponse>> AddorUpdateItemInCart(string userId,int menuItemId,int updateQuantityBy)
         {
-            ShoppingCart shoppingCart = _context.ShoppingCarts.Include(g=>g.CarItems).FirstOrDefault(q => q.UserId == userId);
+            ShoppingCart shoppingCart = _context.ShoppingCarts.Include(g=>g.CarItems)
+                .FirstOrDefault(q => q.UserId == userId);
             MenuItem menuItem = _context.MenuItems.FirstOrDefault(q => q.Id == menuItemId);
             if (menuItem == null)
             {
@@ -84,7 +85,8 @@ namespace ReactApiPract.Controllers
             else
             {
                 //shopping cart exist
-                CartItem cartItem = shoppingCart.CarItems.FirstOrDefault(q => q.MenuItemId == menuItemId);
+                CartItem cartItem = shoppingCart.CarItems
+                    .FirstOrDefault(q => q.MenuItemId == menuItemId);
                 if (cartItem == null)
                 {
                     CartItem newCartItem = new CartItem()

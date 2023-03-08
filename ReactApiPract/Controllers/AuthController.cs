@@ -33,6 +33,7 @@ namespace ReactApiPract.Controllers
             _usermanager = usermanager;
             _rolemanager = rolemanager;
         }
+       
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDTO register)
         {
@@ -86,8 +87,6 @@ namespace ReactApiPract.Controllers
             return BadRequest(_response);
 
         }
-
-
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO login)
