@@ -104,7 +104,6 @@ namespace ReactApiPract.Controllers
                 return BadRequest(_response);
             }
 
-
             JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
             byte[] key = Encoding.ASCII.GetBytes(secretKey);
             var roles = await _usermanager.GetRolesAsync(user);
@@ -120,9 +119,7 @@ namespace ReactApiPract.Controllers
                 Expires = DateTime.UtcNow.AddDays(7),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),SecurityAlgorithms.HmacSha256Signature)
             };
-            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-        
-
+            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);    
 
             LoginResponseDTO loginResponse = new LoginResponseDTO()
             {
@@ -141,7 +138,5 @@ namespace ReactApiPract.Controllers
             _response.Result = loginResponse;
             return Ok(_response);
         }
-
-
     }
 }

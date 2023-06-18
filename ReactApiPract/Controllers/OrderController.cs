@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 using ReactApiPract.Data;
 using ReactApiPract.Models;
 using ReactApiPract.Models.DTO;
-using ReactApiPract.Services;
 using ReactApiPract.Utility;
 using System.Net;
+using System.Text.Json;
 
 namespace ReactApiPract.Controllers
 {
@@ -22,20 +22,33 @@ namespace ReactApiPract.Controllers
             _response = response;
         }
         [HttpGet]
-        public async Task<ActionResult<ApiResponse>> GetOrders(string? userId)
+        public async Task<ActionResult<ApiResponse>> GetOrders(string? userId, string? searchString, string? status, int pageNumber = 1, int pageSize = 5)
         {
             try
             {
-                var orderHeaders = _context.OrderHeaders.Include(q => q.OrderDetails)
+                IEnumerable<OrderHeader> orderHeaders = _context.OrderHeaders.Include(q => q.OrderDetails)
                     .ThenInclude(q => q.MenuItem).OrderByDescending(q => q.OrderHeaderId);
                 if (!string.IsNullOrEmpty(userId))
                 {
-                    _response.Result = orderHeaders.Where(q => q.ApplicationUserId == userId);
+                    orderHeaders = orderHeaders.Where(q => q.ApplicationUserId == userId);
                 }
-                else
+                if (!string.IsNullOrEmpty(searchString))
                 {
-                    _response.Result = orderHeaders;
+                    orderHeaders = orderHeaders.Where(u => u.PickupPhoneNumber.Contains(searchString) ||
+                    u.PickupEmail.Contains(searchString.ToLower()) || u.PickupName.Contains(searchString.ToLower()));
                 }
+                if (!string.IsNullOrEmpty(status))
+                {
+                    orderHeaders = orderHeaders.Where(u => u.Status.ToLower() == status.ToLower());
+                }
+                Pagination pagination = new Pagination
+                {
+                    CurrentPage = pageNumber,
+                    PageSize = pageSize,
+                    TotalRecords = orderHeaders.Count()
+                };
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
+                _response.Result = orderHeaders.Skip((pageNumber - 1) * pageSize).Take(pageSize);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);
             }
@@ -127,11 +140,11 @@ namespace ReactApiPract.Controllers
             return _response;
         }
         [HttpPut]
-        public async Task<ActionResult<ApiResponse>> UpdateOrder(int id,[FromBody] OrderHeaderUpdateDTO updateHeader)
+        public async Task<ActionResult<ApiResponse>> UpdateOrder(int id, [FromBody] OrderHeaderUpdateDTO updateHeader)
         {
             try
             {
-                if(updateHeader == null || id != updateHeader.OrderHeaderId)
+                if (updateHeader == null || id != updateHeader.OrderHeaderId)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;
@@ -139,7 +152,7 @@ namespace ReactApiPract.Controllers
                 }
                 OrderHeader orderHeader = _context.OrderHeaders
                     .FirstOrDefault(q => q.OrderHeaderId == id);
-                if(orderHeader == null)
+                if (orderHeader == null)
                 {
                     _response.IsSuccess = false;
                     _response.StatusCode = HttpStatusCode.BadRequest;

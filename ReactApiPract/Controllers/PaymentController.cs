@@ -22,7 +22,7 @@ namespace ReactApiPract.Controllers
             _response = new();         
             this.config = config;
         }
-        [HttpPost("MakePayment")]
+        [HttpPost()]
         public async Task<ActionResult<ApiResponse>> MakePayment(string userId)
         {
             ShoppingCart shoppingCart = _context.ShoppingCarts.Include(q => q.CarItems)

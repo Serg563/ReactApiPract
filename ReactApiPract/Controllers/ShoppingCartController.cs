@@ -77,7 +77,7 @@ namespace ReactApiPract.Controllers
 
                 CartItem newCartItem = new CartItem()
                 {
-                    MenuItemId = menuItemId,
+                    MenuItemId = menuItemId, 
                     Quantity = updateQuantityBy,
                     ShoppingCartId = newCart.Id,
                     MenuItem = null
